@@ -1,0 +1,229 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "Unit1.h"
+
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+int x = -4;
+int y = -4;
+int bounceBall = 0;
+int leftPoints =0;
+int rightPoints =0;
+AnsiString servingPlayer = "left";
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+        : TForm(Owner)
+{
+
+        Application -> MessageBox("Witaj w grze PingPong.\n\n"
+        "Lewy gracz steruje wciskaj¹c klawisze A oraz Z.\n"
+        "Prawy gracz steruje wciskaj¹c strza³ki do góry i w dó³.\n\n"
+        "Dla urozmaicenia zabawy:\n"
+        "       *Kiedy odbijasz pi³kê paletki  na jej œrodku,pi³ka przyspiesza \n"
+
+                "Przed rozpoczêciem gry powiêksz okno!!!!\n\n\n"
+
+                        "Mi³ej zabawy!", "PingPong", MB_OK);
+
+                        
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Timer_ballTimer(TObject *Sender)
+{
+
+      ball->Left += x;
+      ball->Top += y;
+      if (ball->Top <= tlo->Top)
+        y = -y;
+      if (ball->Top+ball->Height >= tlo->Height)
+        y = -y;
+      //przegrana gracza lewego
+      if (ball->Left <= paddleLeft ->Left + paddleLeft ->Width -50)
+        {
+           ball -> Visible =false;
+           servingPlayer = "right";
+           rightPoints++;
+           winner1->Visible = true;
+
+           Timer_ball -> Enabled = false;
+           info1->Visible = true;
+           info1 ->Caption = "Ilosc odbic: " + IntToStr(bounceBall);
+           scoreTable->Visible = true;
+           scoreTable->Caption = IntToStr(leftPoints) + ":" + IntToStr(rightPoints);
+           nextRound->Default = true;
+           nextRound->Visible = true;
+           newGame->Visible = true;
+           bounceBall = 0;
+
+
+
+        }
+
+       if (ball->Left >= paddleLeft->Left
+           && ball->Left <= paddleLeft->Left + paddleLeft->Width
+           && ball->Top >= paddleLeft->Top - ball->Height/2
+           && ball->Top <= paddleLeft->Top + paddleLeft->Height - ball->Height/2)
+             {
+                x = -x;
+                bounceBall++;
+                     if ((ball->Left <= paddleLeft->Left + paddleLeft->Width &&
+                        ball->Top + ball->Height/2 <= paddleLeft->Top + 2 * paddleLeft->Height/3 &&
+                        ball->Top + ball->Height/2 >= paddleLeft->Top + paddleLeft->Height/3))
+                        {
+                           x +=1;
+                        }
+                }
+       //przegrana gracza prawego
+        if (ball->Left >=paddleRight ->Left +paddleRight ->Width)
+        {
+
+           Timer_ball -> Enabled = false;
+           ball -> Visible =false;
+           servingPlayer = "left";
+           leftPoints++;
+           winner2->Visible = true;
+           info1->Visible = true;
+           info1 ->Caption = "Ilosc odbic: " + IntToStr(bounceBall);
+           scoreTable->Visible = true;
+           scoreTable->Caption = IntToStr(leftPoints) + ":" + IntToStr(rightPoints);
+           nextRound->Default = true;
+           nextRound->Visible = true;
+           newGame->Visible = true;
+           bounceBall = 0;
+
+
+        }
+
+
+       if (ball->Left + ball->Width >= paddleRight->Left
+            && ball->Left + ball->Width <= paddleRight->Left + paddleRight->Width
+            && ball->Top >= paddleRight->Top - ball->Height/2
+            && ball->Top <= paddleRight->Top + paddleRight->Height - ball->Height/2)
+             {
+                     x = -x;
+                     bounceBall++;
+                     if ((ball->Left <= paddleRight->Left + paddleRight->Width &&
+                        ball->Top + ball->Height/2 <= paddleRight->Top + 2 * paddleRight->Height/3 &&
+                        ball->Top + ball->Height/2 >= paddleRight->Top + paddleRight->Height/3))
+                        {
+                           x -=1;
+                        }
+
+             }
+
+             
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::paddleLeftUpTimerUp(TObject *Sender)
+{
+     if (paddleLeft->Top -10 > tlo->Top) paddleLeft -> Top -= tlo->Height/50;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FormKeyDown(TObject *Sender, WORD &Key,
+      TShiftState Shift)
+{
+        if(Key == 'A') paddleLeftUp->Enabled = true;
+        if(Key == 'Z') paddleLeftDown->Enabled = true;
+        if(Key == VK_UP) paddleRightUp->Enabled = true;
+        if(Key == VK_DOWN) paddleRightDown->Enabled = true;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FormKeyUp(TObject *Sender, WORD &Key,
+      TShiftState Shift)
+{
+        if(Key == 'A') paddleLeftUp->Enabled = false;
+        if(Key == 'Z') paddleLeftDown->Enabled = false;
+        if(Key == VK_UP) paddleRightUp->Enabled = false;
+        if(Key == VK_DOWN) paddleRightDown->Enabled = false;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::paddleLeftDownTimer(TObject *Sender)
+{
+if (paddleLeft->Top +10 < tlo->Top + tlo -> Height - paddleLeft->Height) paddleLeft -> Top += tlo->Height/50;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::paddleRightUpTimer(TObject *Sender)
+{
+     if (paddleRight->Top -10 > tlo->Top) paddleRight -> Top -= tlo->Height/50;
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::paddleRightDownTimer(TObject *Sender)
+{
+      if (paddleRight->Top +10 < tlo->Top + tlo -> Height - paddleRight->Height) paddleRight -> Top += tlo->Height/50;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TForm1::nextRoundClick(TObject *Sender)
+{
+
+        ball->Top = tlo->Height/2 - tlo->Height/2;
+        ball->Left = tlo->Width/2 - tlo->Width/2;
+        ball->Enabled = true;
+        ball->Visible = true;
+        Timer_ball -> Enabled = true;
+        info1->Visible = false;
+        scoreTable->Visible = false;
+        nextRound->Visible = false;
+        winner1 ->Visible = false;
+        winner2 ->Visible = false;
+        newGame->Visible = false;
+
+        if (servingPlayer == "left")
+        {
+                ball->Left = 130;
+                x = 4,y=4;
+        }
+        if (servingPlayer == "right")
+        {
+                ball->Left = tlo->Width - 80 - paddleRight->Width - 10;
+                x = -4,y=4;
+         }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::newGameClick(TObject *Sender)
+{
+
+        ball->Top = 272;
+        ball->Left = 440;
+        ball->Enabled = true;
+        ball->Visible = true;
+        Timer_ball -> Enabled = true;
+        info1->Visible = false;
+        scoreTable->Visible = false;
+        nextRound->Visible = false;
+        winner1 ->Visible = false;
+        winner2 ->Visible = false;
+        newGame->Visible = false;
+
+        //newGame->Default = false;
+        
+
+        y = -4;
+        x = 4;
+        leftPoints = 0;
+        rightPoints = 0;
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+        Timer_ball->Enabled = true;
+        ball->Visible = true;
+        Button1->Visible = false;
+}
+//---------------------------------------------------------------------------
+
